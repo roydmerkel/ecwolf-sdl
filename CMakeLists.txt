@@ -249,7 +249,8 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
   if (NOT DEFINED SDL_${_OPT}_ENABLED_BY_DEFAULT)
     set(SDL_${_OPT}_ENABLED_BY_DEFAULT ON)
   endif()
-  option(SDL_${_OPT} "Enable the ${_SUB} subsystem" ${SDL_${_OPT}_ENABLED_BY_DEFAULT})
+  # ECWolf: Vendored
+  set(SDL_${_OPT} ${SDL_${_OPT}_ENABLED_BY_DEFAULT})
 endforeach()
 
 option_string(ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
@@ -310,8 +311,9 @@ set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
 
 # TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
 # The options below are for compatibility to configure's default behaviour.
-set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
-set(SDL_STATIC ON CACHE BOOL "Build a static version of the library")
+# ECWolf: We only cared to build static if we're vendoring
+set(SDL_SHARED OFF)
+set(SDL_STATIC ON)
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" OFF "SDL_STATIC" OFF)
 
@@ -1440,7 +1442,8 @@ listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
 # Compat helpers for the configuration files
-if(NOT WINDOWS OR CYGWIN)
+# ECWolf: we don't really care about this
+if(FALSE)
   # TODO: we need a Windows script, too
   execute_process(COMMAND sh ${SDL2_SOURCE_DIR}/build-scripts/updaterev.sh)
 
@@ -1573,13 +1576,16 @@ if(SDL_STATIC)
   # libraries - do we need to consider this?
   set(_INSTALL_LIBS "SDL2-static" ${_INSTALL_LIBS})
   target_link_libraries(SDL2-static ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+
+  # ECWolf: Interface include directories
+  target_include_directories(SDL2-static INTERFACE "${SDL2_BINARY_DIR}/include" "${SDL2_SOURCE_DIR}/include")
 endif()
 
 ##### Installation targets #####
-install(TARGETS ${_INSTALL_LIBS}
-  LIBRARY DESTINATION "lib${LIB_SUFFIX}"
-  ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
-  RUNTIME DESTINATION bin)
+#install(TARGETS ${_INSTALL_LIBS}
+#  LIBRARY DESTINATION "lib${LIB_SUFFIX}"
+#  ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
+#  RUNTIME DESTINATION bin)
 
 file(GLOB INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/*.h)
 file(GLOB BIN_INCLUDE_FILES ${SDL2_BINARY_DIR}/include/*.h)
@@ -1588,7 +1594,7 @@ foreach(_FNAME ${BIN_INCLUDE_FILES})
   list(REMOVE_ITEM INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/${_INCNAME})
 endforeach()
 list(APPEND INCLUDE_FILES ${BIN_INCLUDE_FILES})
-install(FILES ${INCLUDE_FILES} DESTINATION include/SDL2)
+#install(FILES ${INCLUDE_FILES} DESTINATION include/SDL2)
 
 if(NOT (WINDOWS OR CYGWIN))
   if(SDL_SHARED)
@@ -1597,21 +1603,21 @@ if(NOT (WINDOWS OR CYGWIN))
     else()
         set(SOEXT "so")
     endif()
-    install(CODE "
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      \"libSDL2-2.0.${SOEXT}\" \"libSDL2.${SOEXT}\")")
-    install(FILES ${SDL2_BINARY_DIR}/libSDL2.${SOEXT} DESTINATION "lib${LIB_SUFFIX}")
+#    install(CODE "
+#      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+#      \"libSDL2-2.0.${SOEXT}\" \"libSDL2.${SOEXT}\")")
+#    install(FILES ${SDL2_BINARY_DIR}/libSDL2.${SOEXT} DESTINATION "lib${LIB_SUFFIX}")
   endif()
-  if(FREEBSD)
+#  if(FREEBSD)
     # FreeBSD uses ${PREFIX}/libdata/pkgconfig
-    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
-  else()
-    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
-      DESTINATION "lib${LIB_SUFFIX}/pkgconfig")
-  endif()
-  install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION bin)
+#    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
+#  else()
+#    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
+#      DESTINATION "lib${LIB_SUFFIX}/pkgconfig")
+#  endif()
+#  install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION bin)
   # TODO: what about the .spec file? Is it only needed for RPM creation?
-  install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_FULL_DATAROOTDIR}/aclocal")
+#  install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_FULL_DATAROOTDIR}/aclocal")
 endif()
 
 ##### Uninstall target #####
