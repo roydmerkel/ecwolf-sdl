@@ -318,6 +318,11 @@ set(SDL_STATIC ON)
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" OFF "SDL_STATIC" OFF)
 
+# ECWolf: No OpenGL ES on MinGW
+if(MINGW)
+	set(VIDEO_OPENGLES OFF)
+endif()
+
 # General source files
 file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/*.c
