@@ -117,7 +117,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Haiku.*")
 endif()
 
 # Don't mistake osx for unix
-if(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE AND NOT ANDROID)
   set(UNIX_SYS ON)
 else()
   set(UNIX_SYS OFF)
@@ -367,14 +367,15 @@ if(USE_GCC OR USE_CLANG)
     endif()
   endif()
 
-  check_c_compiler_flag(-Wdeclaration-after-statement HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
-  if(HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
-    check_c_compiler_flag(-Werror=declaration-after-statement HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
-    if(HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
-      list(APPEND EXTRA_CFLAGS "-Werror=declaration-after-statement")
-    endif()
-    list(APPEND EXTRA_CFLAGS "-Wdeclaration-after-statement")
-  endif()
+  # ECWolf: Disable for Android
+  #check_c_compiler_flag(-Wdeclaration-after-statement HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
+  #if(HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
+  #  check_c_compiler_flag(-Werror=declaration-after-statement HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
+  #  if(HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
+  #    list(APPEND EXTRA_CFLAGS "-Werror=declaration-after-statement")
+  #  endif()
+  #  list(APPEND EXTRA_CFLAGS "-Wdeclaration-after-statement")
+  #endif()
 
   if(DEPENDENCY_TRACKING)
     check_c_source_compiles("
@@ -771,6 +772,8 @@ if(ANDROID)
       set(HAVE_VIDEO_OPENGLES TRUE)
       set(SDL_VIDEO_OPENGL_ES2 1)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
+      # ECWolf: There's a link for that
+      list(APPEND EXTRA_LIBS GLESv2)
     endif()
   endif()
   list(APPEND EXTRA_LDFLAGS "-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit")
@@ -1585,6 +1588,11 @@ if(SDL_STATIC)
 
   # ECWolf: Interface include directories
   target_include_directories(SDL2-static INTERFACE "${SDL2_BINARY_DIR}/include" "${SDL2_SOURCE_DIR}/include")
+
+  # ECWolf: Android OpenGL ES
+  if(ANDROID)
+	target_compile_definitions(SDL2-static PRIVATE "-DGL_GLEXT_PROTOTYPES")
+  endif()
 endif()
 
 ##### Installation targets #####
