@@ -136,7 +136,7 @@ else()
 endif()
 
 # Default option knobs
-if(APPLE OR ARCH_64)
+if((APPLE OR ARCH_64 OR ANDROID) AND (NOT CMAKE_ANDROID_ARCH_ABI MATCHES "arm"))
   set(OPT_DEF_SSEMATH ON)
 endif()
 if(UNIX OR MINGW OR MSYS)
