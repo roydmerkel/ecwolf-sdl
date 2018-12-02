@@ -524,7 +524,7 @@ if(ASSEMBLY)
     endif()
 
     if(SSEMATH)
-      if(SSE OR SSE2)
+      if(HAVE_SSE OR HAVE_SSE2) # [ECWolf] These should probably be HAVE_ so HAVE_SSEMATH doesn't get used on non-x86
         if(USE_GCC)
           list(APPEND EXTRA_CFLAGS "-mfpmath=387")
         endif()
