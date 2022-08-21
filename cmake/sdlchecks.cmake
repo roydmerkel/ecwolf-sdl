@@ -1206,6 +1206,8 @@ macro(CheckHIDAPI)
     if(HAVE_HIDAPI)
       if(ANDROID)
         list(APPEND SOURCE_FILES ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
+        # ECWolf: This needs to compile with modern C++
+        set_source_files_properties(${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp PROPERTIES COMPILE_FLAGS "-std=gnu++11")
       endif()
       if(IOS OR TVOS)
         list(APPEND SOURCE_FILES ${SDL2_SOURCE_DIR}/src/hidapi/ios/hid.m)

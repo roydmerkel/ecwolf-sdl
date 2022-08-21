@@ -85,8 +85,8 @@ set(SDL_MICRO_VERSION 0)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 
 # Set defaults preventing destination file conflicts
-set(SDL_CMAKE_DEBUG_POSTFIX "d"
-    CACHE STRING "Name suffix for debug builds")
+# ECWolf: Remove option
+set(SDL_CMAKE_DEBUG_POSTFIX "d")
 
 mark_as_advanced(CMAKE_IMPORT_LIBRARY_SUFFIX SDL_CMAKE_DEBUG_POSTFIX)
 
@@ -289,7 +289,8 @@ if(NOT ("$ENV{CFLAGS}" STREQUAL ""))
 endif()
 
 if(MSVC)
-  option(SDL_FORCE_STATIC_VCRT "Force /MT for static VC runtimes" OFF)
+  # ECWolf - We handle this ourselves
+  set(FORCE_STATIC_VCRT OFF)
   if(SDL_FORCE_STATIC_VCRT)
     foreach(flag_var
         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
@@ -418,7 +419,8 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
   if (NOT DEFINED SDL_${_OPT}_ENABLED_BY_DEFAULT)
     set(SDL_${_OPT}_ENABLED_BY_DEFAULT ON)
   endif()
-  option(SDL_${_OPT} "Enable the ${_SUB} subsystem" ${SDL_${_OPT}_ENABLED_BY_DEFAULT})
+  # ECWolf: Vendored
+  set(SDL_${_OPT} ${SDL_${_OPT}_ENABLED_BY_DEFAULT})
 endforeach()
 
 # Allow some projects to be built conditionally.
@@ -505,9 +507,10 @@ dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" O
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 
-set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
-set(SDL_STATIC ${SDL_STATIC_ENABLED_BY_DEFAULT} CACHE BOOL "Build a static version of the library")
-set(SDL_TEST   ${SDL_TEST_ENABLED_BY_DEFAULT} CACHE BOOL "Build the SDL2_test library")
+# ECWolf: We only care to build static if we're vendoring
+set(SDL_SHARED OFF)
+set(SDL_STATIC ON)
+set(SDL_TEST OFF)
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" "${CMAKE_POSITION_INDEPENDENT_CODE}" "SDL_STATIC" OFF)
 dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST OFF)
@@ -1150,6 +1153,7 @@ if(ANDROID)
 
     list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} OpenSLES)
 
+    # ECWolf: Kicking bumping our Android SDK/NDK version for now so disable
     set(SDL_AUDIO_DRIVER_AAUDIO 1)
     file(GLOB AAUDIO_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/aaudio/*.c)
     list(APPEND SOURCE_FILES ${AAUDIO_AUDIO_SOURCES})
